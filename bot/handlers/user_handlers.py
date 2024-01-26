@@ -10,6 +10,7 @@ load_dotenv()
 
 TOKEN = getenv("TOKEN")
 API = getenv("API")
+API2 = getenv("API2")
 
 user_router = Router()
 
@@ -37,9 +38,33 @@ def get_token_price(token_id):
         logging.error(f'An unexpected error occurred: {e}')
         return None
 
+def get_token_price_second(token_id):
+    url = f'https://api.coingecko.com/api/v3/simple/price?ids={token_id}&vs_currencies=usd'
+    headers = {'Authorization': f'Bearer {API2}'}
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raises HTTPError for bad responses
+        data = response.json()
+
+        if 'error' in data:
+            logging.error(f'Error from CoinGecko API: {data["error"]}')
+            return None
+
+        price = data[token_id]['usd']
+        return price
+
+    except requests.RequestException as e:
+        logging.error(f'Request to CoinGecko API failed: {e}')
+        return None
+
+    except Exception as e:
+        logging.error(f'An unexpected error occurred: {e}')
+        return None
+
 @user_router.message(Command('start'))
 async def cmd_start(msg: types.Message) -> None:
-    await msg.answer(f'Hello, {hbold(msg.from_user.first_name)}! I am the {hbold('Crypto_currencies bot')}. Use {hbold('/btc /eth /bnb /cgpt /sfund')} commands to get the current token price.')
+    await msg.answer(f'Hello, {hbold(msg.from_user.first_name)}! I am the {hbold('Crypto_currencies bot')}. Use {hbold('/btc /eth /bnb /cgpt /sfund /gtai')} commands to get the current token price.')
 
 @user_router.message(Command('btc'))
 async def get_btc(message: types.Message) -> None:
@@ -81,3 +106,10 @@ async def get_sfund(message: types.Message) -> None:
     else:
         await message.answer('Failed to get Seedify Fund price')
 
+@user_router.message(Command('gtai'))
+async def get_cgpt(message: types.Message) -> None:
+    price = get_token_price_second('gt-protocol')
+    if price is not None:
+        await message.answer(f'GT Protocol price: {price} USD')
+    else:
+        await message.answer('Failed to get GT Protocol price')

@@ -11,6 +11,11 @@ load_dotenv()
 
 TOKEN = getenv("TOKEN")
 API = getenv("API")
+API2 = getenv("API2")
+
+print(f"Bot token: {TOKEN}")
+print(f"API: {API}")
+print(f"API2: {API2}") 
 
 # routers
 def register_routers(dp: Dispatcher) -> None:
@@ -23,6 +28,15 @@ async def main() -> None:
     #start bot
     bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
     await dp.start_polling(bot)
+
+    # Keep the bot running indefinitely
+    try:
+        while True:
+            await asyncio.sleep(60)
+    except KeyboardInterrupt:
+        print('Bot is stopping...')
+    finally:
+        print('Bot has stopped')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
